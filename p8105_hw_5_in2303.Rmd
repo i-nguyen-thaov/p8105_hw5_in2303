@@ -1,0 +1,51 @@
+---
+title: "P8105 HW 5"
+author: "Isabella Nguyen"
+date: "2026-11-17"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### 0. Loading Necessary Packages 
+```{r}
+library(tidyverse)
+library(rvest)
+library(purrr)
+
+set.seed(1)
+```
+
+#### Problem 1. 
+```{r}
+
+bday = function(n) {
+  bdays = sample.int(365, size = n, replace = TRUE)
+  dup = length(unique(bdays)) < n
+  
+  return(dup)
+}
+
+bday_results_df = 
+  expand_grid(
+    n = 2:50,
+    iter = 1:10000
+  ) |>
+  mutate(
+    duplicate = map_lgl(n, bday)
+  ) |>
+  group_by(n) |>
+  summarize(
+    prob = mean(duplicate)
+  )
+
+bday_results_df |>
+  ggplot(aes(x = n, y = prob)) + 
+  geom_line()
+    
+```
+
+Probability that at least two people in a group with share the same birthday increases as group size increases. There are steep increases in probability between n = 10 and around n = 30. The probability of a duplicate birthday crosses the 50% mark when the group size is  `r bday_results_df |> filter(prob > 0.50) |> pull(n) |> min()` These steep increases start to flatten as group size approaches n = 50. When the group size is 50 individuals, the probability simulated is close to 100, at around `r bday_results_df |> filter(n==50) |> pull(prob) * 100`%.
+
