@@ -19,7 +19,7 @@ set.seed(1)
 ```
 
 #### Problem 1. 
-```{r}
+```{r problem-1-plot}
 
 bday = function(n) {
   bdays = sample.int(365, size = n, replace = TRUE)
@@ -38,21 +38,21 @@ bday_results_df =
   ) |>
   group_by(n) |>
   summarize(
-    prob = mean(duplicate)
+    probability = mean(duplicate)
   )
 
 bday_results_df |>
-  ggplot(aes(x = n, y = prob)) + 
+  ggplot(aes(x = n, y = probability)) + 
   geom_line()
     
 ```
 
-Probability that at least two people in a group with share the same birthday increases as group size increases. There are steep increases in probability between n = 10 and around n = 30. The probability of a duplicate birthday crosses the 50% mark when the group size is  `r bday_results_df |> filter(prob > 0.50) |> pull(n) |> min()` These steep increases start to flatten as group size approaches n = 50. When the group size is 50 individuals, the probability simulated is close to 100%, at `r bday_results_df |> filter(n==50) |> pull(prob) * 100`%.
+Probability that at least two people in a group with share the same birthday increases as group size increases. There are steep increases in probability between n = 10 and around n = 30. The probability of a duplicate birthday crosses the 50% mark when the group size is  `r bday_results_df |> filter(probability > 0.50) |> pull(n) |> min()` These steep increases start to flatten as group size approaches n = 50. When the group size is 50 individuals, the probability simulated is close to 100%, at `r bday_results_df |> filter(n==50) |> pull(probability) * 100`%.
 
 #### Problem 2
 
 _Creating a dataframe containing all file names_
-```{r, message = FALSE, warning = FALSE}
+```{r, problem-2-plot, message = FALSE, warning = FALSE}
 prob_2_data = tibble(
   files = list.files("./data")
 ) |>
@@ -80,7 +80,10 @@ prob_2_data = tibble(
 
 prob_2_data |>
   ggplot(aes(x = week, y = observation, color = arm, group = interaction(arm, id))) + 
-  geom_line(alpha = 0.6)
+  geom_line(alpha = 0.6) +
+  labs(
+    x = "μ"
+  )
   
 ```
 
@@ -117,7 +120,7 @@ sim_ttest_df =
 ```
 
 _Plot showing proportion of times the null was rejected_
-```{r}
+```{r, problem-3-plot-a}
 sim_ttest_df |>
   group_by(mu) |>
   summarize(power = mean(p.value < 0.05)) |>
@@ -129,14 +132,22 @@ As the effect size increases, statistical power increases. We are more likely to
 
 _Plot showing average estimate of $\hat{\mu}$ on y axis and true value of $\hat{\mu}$ on the x axis + plot of the average estimate of $\hat{\mu}$ only in samples for which the null was rejected_
 
-```{r}
+```{r, problem-3-plot-b}
 sim_ttest_df |>
   group_by(mu) |>
   summarize(
     avg = mean(estimate),
     avg_rej = mean(estimate[p.value < 0.05])
-  )
+  ) |> 
+  ggplot(aes(x = mu)) +
+  geom_line(aes(y = avg, color = "All")) +
+  geom_line(aes(y = avg_rej, color = "Where the null was rejected")) +
+  geom_point(aes(y = avg, color = "All"))+
+  geom_point(aes(y = avg_rej, color = "Where the null was rejected")) +
+  labs(x = "True value of μ",
+       y = expression("Average estimate of " * hat(mu)),
+       color = "Samples")
 
 ```
-  ggplot(aes(x = mu, y = avg)) +
-  geom_line()
+
+The sample average of $\hat{\mu}$ is approximately equal to the true value of $\mu$ when all observations, even those where we fail to reject the null, are included in our calculation. In contrast, when we only include samples where the null is rejected, $\hat{\mu}$ is greater than the true mean when $\mu$ is 0, 1, 2, and 3. As we saw in the previous plot, when $\mu$ is small, the power of the test is also small. So, unusually large $\hat{\mu}$'s would be the only ones that typically reach significance. For $\mu$ between 4 and 6, the power is near 1, and so nearly all sample nulls are rejected, making the estimated $\hat{\mu}$ match the true $\mu$.
