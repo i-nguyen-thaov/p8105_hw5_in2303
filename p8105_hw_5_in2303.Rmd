@@ -47,5 +47,45 @@ bday_results_df |>
     
 ```
 
-Probability that at least two people in a group with share the same birthday increases as group size increases. There are steep increases in probability between n = 10 and around n = 30. The probability of a duplicate birthday crosses the 50% mark when the group size is  `r bday_results_df |> filter(prob > 0.50) |> pull(n) |> min()` These steep increases start to flatten as group size approaches n = 50. When the group size is 50 individuals, the probability simulated is close to 100, at around `r bday_results_df |> filter(n==50) |> pull(prob) * 100`%.
+Probability that at least two people in a group with share the same birthday increases as group size increases. There are steep increases in probability between n = 10 and around n = 30. The probability of a duplicate birthday crosses the 50% mark when the group size is  `r bday_results_df |> filter(prob > 0.50) |> pull(n) |> min()` These steep increases start to flatten as group size approaches n = 50. When the group size is 50 individuals, the probability simulated is close to 100%, at `r bday_results_df |> filter(n==50) |> pull(prob) * 100`%.
+
+#### Problem 2
+
+_Creating a dataframe containing all file names_
+```{r}
+prob_2_data = tibble(
+  files = list.files("./data")
+) |>
+  mutate(path = str_c("./data/", files),
+       data = map(path, read_csv)
+       ) |>
+  unnest(data) |>
+  janitor::clean_names() |>
+  separate(files, into = c("arm", "id"), sep = "_") |>
+  mutate(
+    id = str_remove(id, "\\.csv"), 
+    arm = case_match(arm,
+                     "con" ~ "control",
+                     "exp" ~ "experimental")
+  ) |>
+  pivot_longer(
+    cols = week_1:week_8,
+    names_prefix = "week_",
+    names_to = "week",
+    values_to = "observation"
+  ) |>
+  mutate(week = as.numeric(week)) |>
+  select(-path) |> 
+  relocate(id)
+
+prob_2_data |>
+  ggplot(aes(x = week, y = observation, color = arm, group = interaction(arm, id))) + 
+  geom_line(alpha = 0.6)
+  
+```
+
+At week one, the two study arms start out similarly. Over the 8 weeks, observation values in the experimental arm increase. The observations in the control arm stay flat over the observation period. By the end of the observation period, the control and experimental arm's observations are separated, with all observations in the experimental arm higher than the controls.
+
+
+#### Problem 3
 
