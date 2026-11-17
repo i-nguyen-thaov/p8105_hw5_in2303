@@ -52,7 +52,7 @@ Probability that at least two people in a group with share the same birthday inc
 #### Problem 2
 
 _Creating a dataframe containing all file names_
-```{r}
+```{r, message = FALSE, warning = FALSE}
 prob_2_data = tibble(
   files = list.files("./data")
 ) |>
@@ -90,7 +90,19 @@ At week one, the two study arms start out similarly. Over the 8 weeks, observati
 #### Problem 3
 
 ```{r}
-n = 30
-sigma = 5
-mu = 0
+
+#t test output: estimate is our mu hat here
+
+sim_ttest = function(n = 30, mu = 0, sigma = 5) {
+  sim_data = tibble(
+    x = rnorm(n, mean = mu, sd = sigma)
+  )
+  
+  t.test(sim_data |> pull(x), mu = 0) |> 
+  broom::tidy() |>
+    select(estimate, p.value)
+}
+
+
+
 ```
