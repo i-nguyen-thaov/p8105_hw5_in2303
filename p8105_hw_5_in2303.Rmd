@@ -89,3 +89,8 @@ At week one, the two study arms start out similarly. Over the 8 weeks, observati
 
 #### Problem 3
 
+```{r}
+n = 30
+sigma = 5
+mu = 0
+```
